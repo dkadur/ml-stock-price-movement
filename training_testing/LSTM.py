@@ -38,7 +38,7 @@ from imblearn.over_sampling import ADASYN
 from keras.utils import to_categorical
 from os import chdir
 from glob import glob
-#final_28_2%_OUT
+
 file1 = '/Users/dkadur/Documents/day_trade_lstm-main/CSVs/preprocessing_28/final_28_2%_OUT.CSV'
 
 lb = LabelBinarizer()
@@ -169,64 +169,5 @@ def rf_hyperparameter(model):
 
     return random_search
 
-def graph_comparison(location_target, location_price, model):
-    location_target_1 = '/Users/dkadur/Documents/day_trade_lstm-main/CSVs/preprocessing_26/final_26_OUT.CSV'
-    location_price_1 = '/Users/dkadur/Documents/day_trade_lstm-main/CSVs/preprocessing_25/final_25_OUT.CSV'
-
-    location_target_2 = '/Users/dkadur/Documents/day_trade_lstm-main/CSVs/preprocessing_22/final_22_OUT.CSV'
-    location_price_2 = '/Users/dkadur/Documents/day_trade_lstm-main/CSVs/preprocessing_23/final_23_OUT.CSV'
-    comparison = pd.read_csv(location_price)
-    comparison_array = comparison.values
-
-    dataset = pd.read_csv(location_target)
-    dataset['compare'] = comparison_array[:,1:2]
-    dataset['p_change'] = comparison_array[:,2:3]
-    dataset = dataset.sample(frac=0.2, random_state=1)
-
-    array = dataset.values
-    x = array[:,1:22]
-    compare = array[:,23:24]
-    p_change = array[:,24:25]
-
-    predictions = model.predict(x)
-    predictions = lb.inverse_transform(predictions)
-
-    prob1 = model.predict_proba(x)[:,1]
-
-    counter = 0
-    total = 0
-    x_plot = []
-    y_plot = []
-
-    for index, value in enumerate(prob1):
-        if value > 0.8:
-            total+=1
-            x_plot.append(value)
-            y_plot.append(p_change[index])
-            if compare[index] == 1:
-                counter+=1
-
-    ratio = counter/total
-    print('Percentage of > 0.8 prob that results in p30-p20 positive change\n' + str(ratio) + '\n')
-
-    plt.figure(figsize=(15,7))
-    plt.scatter(x_plot,y_plot,s=10)
-    plt.xlabel('Probability')
-    plt.ylabel('Ratio change')
-    plt.show()
-
-    plt.figure(figsize=(15,7))
-    plt.hist(prob1, bins=50, label='Prob of 1', alpha=0.7, color='r')
-    plt.xlabel('Probability', fontsize=25)
-    plt.ylabel('Number of instances', fontsize=25)
-    plt.legend(fontsize=15)
-    plt.tick_params(axis='both', labelsize=25, pad=5)
-    plt.show() 
-
-    print('Ratio of predicted 1s to total given values\n' + str(np.count_nonzero(predictions==1) / len(predictions)))
-
 if __name__ == '__main__':
     model = process()
-
-#graph_comparison(location_target_1, location_price_1, model)
-#graph_comparison(location_target_2, location_price_2, model)
